@@ -19,15 +19,21 @@ namespace StringFormatter.Core
             int currentState = 1;
             int previousState = 0;
             int startPointer = 0;
-            int endPointer = 0;
 
             var result = new StringBuilder();
             
-            for (int i = 0, j = 0; i < template.Length; i++)
+            for (int i = 0; i < template.Length; i++)
             {
+
+                if (Char.IsWhiteSpace(template[i]))
+                {
+                    result.Append(template[i]);
+                    continue;
+                }
+
                 previousState = currentState;
                 currentState = _transitionMatrix[currentState, GetSubset(template[i])];
-              
+
                 switch (currentState)
                 {
                     case 0:
@@ -35,30 +41,21 @@ namespace StringFormatter.Core
                             $"argument not supported. Position: {i}");
 
                     case 1:
-                        if (previousState == 4 || previousState == 9 || previousState == 10)
+                        if (previousState == 4 || previousState == 7)
                         {
-                            result.Append(template[i]);
-                            string copy = result.ToString();
-                            string cacheValue = String.Concat(copy[(startPointer + 1)..^1]
-                                .Where(c => !Char.IsWhiteSpace(c)));
-                            result.Remove(startPointer, j - startPointer + 1);
+                            string cacheValue = String.Concat(template[startPointer..i]);
+
                             result.Append(_cache.TryHitCache(target, cacheValue));
-                            j = result.Length - 1;
                         }
                         else
                             result.Append(template[i]);
                         break;
 
-                    case 2:
-                        startPointer = j;
-                        result.Append(template[i]);
-                        break;
-
-                    default:
-                        result.Append(template[i]); 
+                    case 4:
+                        if (previousState == 2)
+                            startPointer = i;
                         break;
                 }
-                j++;
             }
             if ( currentState == 1 ) 
                 return result.ToString();
@@ -78,23 +75,19 @@ namespace StringFormatter.Core
             "}",
             "[",
             "]",
-            " ",
         };
 
         // State machine
         private readonly int[,] _transitionMatrix =
         {
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            { 1, 1, 1, 1, 2, 3, 1, 1, 1},
-            { 0, 4, 0, 4, 1, 0, 0, 0, 5},
-            { 0, 0, 0, 0, 0, 1, 0, 0, 0},
-            { 0, 4, 4, 4, 0, 1, 6, 0, 10},
-            { 0, 4, 0, 4, 0, 0, 0, 0, 5},
-            { 0, 0, 7, 0, 0, 0, 0, 0, 6},
-            { 0, 0, 7, 0, 0, 0, 0, 9, 8},
-            { 0, 0, 0, 0, 0, 0, 0, 9, 8},
-            { 0, 0, 0, 0, 0, 1, 0, 0, 9},
-            { 0, 0, 0, 0, 0, 1, 6, 0, 10}
+            { 0, 0, 0, 0, 0, 0, 0, 0},
+            { 1, 1, 1, 1, 2, 3, 1, 1},
+            { 0, 4, 0, 4, 1, 0, 0, 0},
+            { 0, 0, 0, 0, 0, 1, 0, 0},
+            { 0, 4, 4, 4, 0, 1, 5, 0},
+            { 0, 0, 6, 0, 0, 0, 0, 0},
+            { 0, 0, 6, 0, 0, 0, 0, 7},
+            { 0, 0, 0, 0, 0, 1, 0, 0}
         };
 
         // Determine subset from character

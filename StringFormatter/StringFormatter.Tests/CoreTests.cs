@@ -18,5 +18,47 @@ namespace StringFormatter.Tests
             // Assert
             Assert.AreEqual(expected, actual);
         }
+
+        [TestMethod]
+        public void Test_Escape_Sequence_Between()
+        {
+            // Arrange
+            var user = new User("Петя", "Иванов");
+            string expected = $"Привет, {{FirstName}} {user.LastName}!";
+
+            // Act
+            var actual = Core.StringFormatter.Shared.Format("Привет, {{FirstName}} {LastName}!", user);
+
+            // Assert
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Test_Escape_Sequence_OnStart()
+        {
+            // Arrange
+            var user = new User("Петя", "Иванов");
+            string expected = $"{{FirstName}} {user.LastName}!";
+
+            // Act
+            var actual = Core.StringFormatter.Shared.Format("{{FirstName}} {LastName}!", user);
+
+            // Assert
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Test_Valid_OnStart()
+        {
+            // Arrange
+            var user = new User("Петя", "Иванов");
+            string expected = $"{user.FirstName} {user.LastName}!";
+
+            // Act
+            var actual = Core.StringFormatter.Shared.Format("{FirstName} {LastName}!", user);
+
+            // Assert
+            Assert.AreEqual(expected, actual);
+        }
     }
 }
