@@ -22,12 +22,12 @@ namespace StringFormatter.Core
             int endPointer = 0;
 
             var result = new StringBuilder();
-
-            for (int i = 0; i < template.Length; i++)
+            
+            for (int i = 0, j = 0; i < template.Length; i++)
             {
                 previousState = currentState;
                 currentState = _transitionMatrix[currentState, GetSubset(template[i])];
-
+              
                 switch (currentState)
                 {
                     case 0:
@@ -37,23 +37,28 @@ namespace StringFormatter.Core
                     case 1:
                         if (previousState == 4 || previousState == 9 || previousState == 10)
                         {
-                            string cacheValue = String.Concat(template[endPointer..i]
+                            result.Append(template[i]);
+                            string copy = result.ToString();
+                            string cacheValue = String.Concat(copy[(startPointer + 1)..^1]
                                 .Where(c => !Char.IsWhiteSpace(c)));
-                            result.Remove(startPointer, i - startPointer);
+                            result.Remove(startPointer, j - startPointer + 1);
                             result.Append(_cache.TryHitCache(target, cacheValue));
+                            j = result.Length - 1;
                         }
                         else
                             result.Append(template[i]);
                         break;
-                    
-                    case 4:
-                        if (previousState == 2 || previousState == 5 ) 
-                            startPointer = i;
+
+                    case 2:
+                        startPointer = j;
+                        result.Append(template[i]);
                         break;
 
                     default:
-                        result.Append(template[i]); break;
+                        result.Append(template[i]); 
+                        break;
                 }
+                j++;
             }
             if ( currentState == 1 ) 
                 return result.ToString();
@@ -65,7 +70,8 @@ namespace StringFormatter.Core
         private readonly string[] _subsets =
         {
             "",
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+                "абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ",
             "0123456789",
             "_",
             "{",
