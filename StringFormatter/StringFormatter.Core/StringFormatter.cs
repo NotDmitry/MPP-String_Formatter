@@ -1,4 +1,5 @@
 ﻿using StringFormatter.Core.Interfaces;
+using System.Text;
 
 namespace StringFormatter.Core
 {
@@ -8,9 +9,52 @@ namespace StringFormatter.Core
 
         public string Format(string template, object target)
         {
-            throw new NotImplementedException();
+            int currentState = 1;
+            int previousState = 0;
+            int startPointer = 0;
+            int endPointer = 0;
+
+            var result = new StringBuilder();
+
+            for (int i = 0; i < template.Length; i++)
+            {
+                previousState = currentState;
+                currentState = _transitionMatrix[currentState, GetSubset(template[i])];
+
+                switch (currentState)
+                {
+                    case 0:
+                        throw new ArgumentException($"Invalid template or interpolation " +
+                            $"argument not supported. Position: {i}");
+
+                    case 1:
+                        if (previousState == 4 || previousState == 9 || previousState == 10)
+                        {
+                            string cacheValue = template[startPointer..i];
+                            cacheValue = String.Concat(template[endPointer..i]
+                                .Where(c => !Char.IsWhiteSpace(c)));
+                            result.Append(template[i]);
+                        }
+                        else
+                            result.Append(template[i]);
+                        break;
+                    
+                    case 4:
+                        if (previousState == 2 || previousState == 5 ) 
+                            startPointer = i;
+                        break;
+
+                    default:
+                        result.Append(template[i]); break;
+                }
+            }
+            if ( currentState == 1 ) 
+                return result.ToString();
+            else
+                throw new ArgumentException($"Invalid template ending");
         }
 
+        // Character subsets in positions of transition collumns
         private readonly string[] _subsets =
         {
             "",
@@ -24,6 +68,7 @@ namespace StringFormatter.Core
             " ",
         };
 
+        // State machine
         private readonly int[,] _transitionMatrix =
         {
             { 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -39,6 +84,7 @@ namespace StringFormatter.Core
             { 0, 0, 0, 0, 0, 1, 6, 0, 10}
         };
 
+        // Determine subset from character
         private int GetSubset(char token)
         {
             int result = 0;
