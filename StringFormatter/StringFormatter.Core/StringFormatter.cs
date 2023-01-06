@@ -7,6 +7,13 @@ namespace StringFormatter.Core
     {
         public static readonly StringFormatter Shared = new StringFormatter();
 
+        private readonly Cache _cache;
+
+        private StringFormatter()
+        {
+            _cache = new Cache();
+        }
+
         public string Format(string template, object target)
         {
             int currentState = 1;
@@ -30,10 +37,10 @@ namespace StringFormatter.Core
                     case 1:
                         if (previousState == 4 || previousState == 9 || previousState == 10)
                         {
-                            string cacheValue = template[startPointer..i];
-                            cacheValue = String.Concat(template[endPointer..i]
+                            string cacheValue = String.Concat(template[endPointer..i]
                                 .Where(c => !Char.IsWhiteSpace(c)));
-                            result.Append(template[i]);
+                            result.Remove(startPointer, i - startPointer);
+                            result.Append(_cache.TryHitCache(target, cacheValue));
                         }
                         else
                             result.Append(template[i]);
