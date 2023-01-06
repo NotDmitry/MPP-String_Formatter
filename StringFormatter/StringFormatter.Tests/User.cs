@@ -12,6 +12,8 @@ public class User
     public string FirstName { get; }
     public string LastName { get; }
 
+    public int[] Dice { get; } = { 1, 2, 3, 4, 5 };
+
     public User(string firstName, string lastName)
     {
         FirstName = firstName;
