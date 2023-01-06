@@ -60,5 +60,61 @@ namespace StringFormatter.Tests
             // Assert
             Assert.AreEqual(expected, actual);
         }
+
+        [TestMethod]
+        public void Test_Escape_Sequence_End()
+        {
+            // Arrange
+            var user = new User("Петя", "Иванов");
+            string expected = $"{user.FirstName} {{LastName}}";
+
+            // Act
+            var actual = Core.StringFormatter.Shared.Format("{FirstName} {{LastName}}", user);
+
+            // Assert
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Test_Valid_End()
+        {
+            // Arrange
+            var user = new User("Петя", "Иванов");
+            string expected = $"{user.FirstName} {user.LastName}";
+
+            // Act
+            var actual = Core.StringFormatter.Shared.Format("{FirstName} {LastName}", user);
+
+            // Assert
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Test_Double_Escape()
+        {
+            // Arrange
+            var user = new User("Петя", "Иванов");
+            string expected = $"Привет, {{{{LastName}}}}";
+
+            // Act
+            var actual = Core.StringFormatter.Shared.Format("Привет, {{{{LastName}}}}", user);
+
+            // Assert
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Test_Combine_Escape_Valid()
+        {
+            // Arrange
+            var user = new User("Петя", "Иванов");
+            string expected = $"Привет, {user.FirstName} {{{user.LastName}}}";
+
+            // Act
+            var actual = Core.StringFormatter.Shared.Format("Привет, {FirstName} {{{LastName}}}", user);
+
+            // Assert
+            Assert.AreEqual(expected, actual);
+        }
     }
 }
